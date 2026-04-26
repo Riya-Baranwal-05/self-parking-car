@@ -87,7 +87,7 @@ class Renderer:
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-        plt.pause(0.05)
+        plt.pause(0.005)
 
     def close(self):
         plt.ioff()

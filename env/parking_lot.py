@@ -2,21 +2,18 @@ import numpy as np
 
 class ParkingLot:
     def __init__(self):
-        #parked cars blocking the space (obstacles)
-        #each is (x,y,width,height)
+        # parked cars blocking the space
         self.obstacles = [
-            (12,7.5,4.0,3.0), #car in front of space
-            (21,7.5,4.0,3.0) #car behind space
-
+            (10, 7.5, 4.0, 3.0),   # left obstacle  x=10 to 14
+            (20, 7.5, 4.0, 3.0),   # right obstacle x=20 to 24
         ]
 
-        #target parking space
-        self.space_x = 16.0
-        self.space_y = 7.5
-        self.space_width = 5.0
-        self.space_height = 3.0
+        # space is 1.5 × car length = 6.0m wide
+        self.space_x      = 14.0   # start of space
+        self.space_y      = 7.5    # bottom of space
+        self.space_width  = 6.0    # 1.5 × 4.0m car length
+        self.space_height = 3.0    # fits car width 1.8m with buffer
 
-        #curb - bottom wall the car must not hit
         self.curb_y = 7.0
 
     def get_parking_space(self):
@@ -33,7 +30,13 @@ class ParkingLot:
         """
         #1. center is inside
         in_x = self.space_x< car.x <self.space_x +self.space_width
-        in_y = self.space_y<car.y < self.space_y + self.space_height
+        
+
+        # rear and front of car must be within space vertically
+        rear_y  = car.y - (car.length / 2) * np.sin(abs(car.heading))
+        front_y = car.y + (car.length / 2) * np.sin(abs(car.heading))
+        in_y = rear_y > self.space_y and front_y < self.space_y + self.space_height
+
 
         #2. heading aligned - should be close to pi (pointing left)
         # or 0(point right).We allow ±15 degrees tolerance
