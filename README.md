@@ -7,39 +7,112 @@ Implements a bicycle kinematic model and a geometric state machine controller.
 ## 📽️ Demo
 *GIF coming soon*
 
+Good — here's the updated README with all the math added. Replace your current README.md with this:
+
+markdown
+# 🚗 Self-Parking Car Simulation
+
+A 2D autonomous parallel parking simulation built from scratch in Python.
+Implements a bicycle kinematic model and a geometric state machine controller.
+
+![Status](https://img.shields.io/badge/status-in%20progress-yellow)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+
+## 📽️ Demo
+*GIF coming soon — see assets/ folder for daily progress recordings*
+
 ## 🧠 How the Controller Works
 
-Real parallel parking has exactly 4 steps. Our controller mirrors this precisely:
+Real parallel parking has exactly 7 steps. Our controller mirrors this precisely:
 
 ### Step 1 — APPROACH
-Drive forward until the car's rear-left corner is perfectly aligned with the 
-top-left corner of the right obstacle car. This position is computed exactly 
-using geometry — no guessing.
+Drive forward until the car's rear-left corner is perfectly aligned with the
+top-left corner of the right obstacle. Position computed exactly from geometry.
 
 ### Step 2 — ARC 1
-Reverse with full right steering until heading reaches 45°. The car follows 
-a circular arc determined by the bicycle kinematic model and wheelbase.
+Reverse with full right steering until heading reaches 45°.
 
 ### Step 3 — STRAIGHT REVERSE
-Reverse straight for exactly 0.8m with wheels straight (heading stays at 45°). 
-This is the step most people skip — it creates room for Arc 2 to complete 
-without hitting the right obstacle. Mirrors real-world parking step 3.
+Reverse straight (wheels straight) until the front-right corner clears the
+right obstacle. Distance calculated dynamically — not hardcoded.
 
 ### Step 4 — ARC 2
-Reverse with full left steering until heading returns to 0°. The car swings 
-into the space. Stops early if rear gets too close to the curb.
+Reverse with full left steering until rear-right corner approaches left obstacle.
+Monitored in real time using corner position formula.
 
-### Step 5 — STRAIGHTEN
-Nudge forward or backward to center the car in the space.
+### Step 5 — FORWARD NUDGE
+Pull forward 1.5m to create room for final straightening. Mirrors real driving.
 
-## 🧠 What's Inside
+### Step 6 — ARC 2 FINAL
+Small final reverse-left arc to bring heading to 0°.
+
+### Step 7 — STRAIGHTEN
+Nudge to center x of parking space.
+APPROACH → ARC1 → STRAIGHT_REVERSE → ARC2
+→ FORWARD_NUDGE → ARC2_FINAL → STRAIGHTEN → DONE
+
+
+## 📐 The Math
+
+### Bicycle Kinematic Model
+x_new = x + v × cos(θ) × dt
+y_new = y + v × sin(θ) × dt
+θ_new = θ + (v / L) × tan(δ) × dt
+
+v = velocity (negative = reversing)
+θ = heading angle (radians)
+L = wheelbase = 2.5m
+δ = steering angle (max ±35°)
+
+
+### Corner Position Formula
+Any corner of the car at heading θ from center (cx, cy):
+forward direction:      x += cos(θ),  y += sin(θ)
+left perpendicular:     x -= sin(θ),  y += cos(θ)
+right perpendicular:    x += sin(θ),  y -= cos(θ)
+
+rear-left corner:
+x = cx - (L/2)×cos(θ) - (W/2)×sin(θ)
+y = cy - (L/2)×sin(θ) - (W/2)×cos(θ)
+
+rear-right corner:
+x = cx - (L/2)×cos(θ) + (W/2)×sin(θ)
+y = cy - (L/2)×sin(θ) - (W/2)×cos(θ)
+
+
+### Arc 1 Entry — Constraint-Based Positioning
+We want rear-left corner = top-left corner of right obstacle at 45°.
+Working backwards from corner to car center:
+cx = obstacle_x + (L/2)×cos(45°) + (W/2)×sin(45°) = 22.051m
+cy = obstacle_y + (L/2)×sin(45°) + (W/2)×cos(45°) = 12.550m
+
+
+### Straight Reverse Distance — Dynamic Calculation
+After Arc1, calculate exactly how far to reverse to clear right obstacle:
+front_right_x = car.x + (L/2)×cos(θ) + (W/2)×sin(θ)
+clearance = front_right_x - right_obstacle_x + 0.3m
+straight_target_x = car.x - clearance × cos(θ)
+
+
+### Arc 2 Safety — Rear-Right Corner Check
+Stop Arc2 before rear-right corner hits left obstacle:
+rear_right_x = car.x - (L/2)×cos(θ) + (W/2)×sin(θ)
+stop when: rear_right_x < space_x + 0.3m
+
+
+### Turning Radius
+R = wheelbase / tan(steering_angle) = 2.5 / tan(35°) = 3.57m minimum
+
+
+## 🗂️ File Structure
 
 | File | What it does |
 |------|-------------|
 | `env/car.py` | Bicycle kinematic model |
 | `env/parking_lot.py` | Parking space, obstacles, collision detection |
 | `env/renderer.py` | Live matplotlib visualization |
-| `controller/parking_controller.py` | 4-step geometric parking controller |
+| `controller/parking_controller.py` | Original geometric controller |
+| `controller/my_controller.py` | Rewritten from scratch — full understanding |
 | `test_car.py` | Main simulation runner |
 
 ## 🚀 How to Run
@@ -49,35 +122,29 @@ pip install numpy matplotlib
 python test_car.py
 ```
 
-##  How it Works
-
-The car uses a **bicycle kinematic model**:
-- Position (x, y) and heading θ updated each timestep
-- Steering angle clamped to physical limits (±35°)
-- Turning radius derived from: `R = wheelbase / tan(steering_angle)`
-
-
-##  Built With
+## 🔧 Built With
 - Python 3.11
 - NumPy
 - Matplotlib
 
-
 ## 📚 What I Learned
 - Bicycle kinematic model from first principles
 - State machine controller design
-- Constraint-based positioning (aligning car geometry with world coordinates)
-- Geometric derivation of parallel parking arcs
-- Collision detection using corner positions
-- Real-world 4-step parallel parking algorithm
-
+- Constraint-based positioning
+- Dynamic clearance calculation from corner geometry
+- Real-time corner monitoring during maneuvers
+- Real-world 7-step parallel parking algorithm
+- Git workflow and daily commit habits
 
 ## 🚧 Status
 - ✅ Bicycle kinematic model
-- ✅ Parking lot with obstacles and collision detection  
+- ✅ Parking lot with obstacles and collision detection
 - ✅ Live renderer
-- ✅ Classical 4-step geometric controller — car parks successfully
+- ✅ Classical geometric controller
+- ✅ Rewritten controller from scratch (my_controller.py)
 - 🔜 Neural correction layer (next)
 
 ---
 *Built as part of a Shu Ha Ri robotics learning journey.*
+
+
