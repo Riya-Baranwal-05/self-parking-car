@@ -23,11 +23,9 @@ for step in range(700):
     car.step(velocity,steering,dt=0.1)
     renderer.draw(car,lot,title=f"State: {ctrl.state}  |  step {step}")
      # add this block
-    if ctrl.state == "ARC2":
-        rear_y = car.y - (car.length / 2) * np.sin(car.heading)
-        print(f"step {step} | x={car.x:.2f} y={car.y:.2f} | "
-              f"heading={np.degrees(car.heading):.1f}° | "
-              f"rear_y={rear_y:.2f} | curb={lot.curb_y}")
+    if ctrl.state in ["ARC2", "FORWARD_NUDGE", "ARC2_FINAL"]:
+        print(f"step {step} | state={ctrl.state} | x={car.x:.2f} y={car.y:.2f} | heading={np.degrees(car.heading):.1f}°")
+
 
     if lot.is_collision(car):
         print(f"💥 Collision at step {step}!")

@@ -28,26 +28,17 @@ class ParkingLot:
         3. Car is not touching the curb
         
         """
-        #1. center is inside
-        in_x = self.space_x< car.x <self.space_x +self.space_width
-        
+        #car center must be within space
+        in_x = self.space_x < car.x < self.space_x + self.space_width
+        in_y = self.space_y + car.width/2 < car.y < self.space_y + self.space_height - car.width/2 + 0.1
 
-        # rear and front of car must be within space vertically
-        rear_y  = car.y - (car.length / 2) * np.sin(abs(car.heading))
-        front_y = car.y + (car.length / 2) * np.sin(abs(car.heading))
-        in_y = rear_y > self.space_y and front_y < self.space_y + self.space_height
+        # above curb
+        above_curb = car.y - (car.width/2) > self.curb_y
 
+        # heading straight
+        heading_aligned = abs(car.heading) < np.radians(5)
 
-        #2. heading aligned - should be close to pi (pointing left)
-        # or 0(point right).We allow ±15 degrees tolerance
-        heading_aligned =(
-            abs(car.heading)<np.radians(15) or
-            abs(abs(car.heading)-np.pi) <np.radians(15)
-        )
-        #3. above the curb
-        above_curb = car.y > self.curb_y
-
-        return in_x and in_y and heading_aligned and above_curb
+        return in_x and in_y and above_curb and heading_aligned
     
     def is_collision(self,car):
         """
