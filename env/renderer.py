@@ -13,8 +13,8 @@ class Renderer:
         self.ax.clear()
 
         #world bounds
-        self.ax.set_xlim(-2,self.world_size)
-        self.ax.set_ylim(4,self.world_size)
+        self.ax.set_xlim(0,32)
+        self.ax.set_ylim(4,18)
         self.ax.set_aspect('equal')
         self.ax.set_facecolor('#e8e8e8')
         self.ax.grid(True,alpha=0.3)
