@@ -4,7 +4,7 @@ import time
 from env.parking_lot import ParkingLot
 from env.renderer import Renderer
 import matplotlib.pyplot as plt
-from controller.parking_controller import ParkingController
+from controller.my_controller import ParkingController
 
 #start the car alongside the road, before the space
 
@@ -18,7 +18,7 @@ print("Starting Parking maneuver...")
 print("Intial state:",car.get_state())
 print(f"Target: ({ctrl.target_x:.1}, {ctrl.target_y:.1f})")
 
-for step in range(500):
+for step in range(700):
     velocity, steering = ctrl.compute_steering()
     car.step(velocity,steering,dt=0.1)
     renderer.draw(car,lot,title=f"State: {ctrl.state}  |  step {step}")
@@ -50,6 +50,10 @@ for step in range(500):
         print(f"Final heading: {np.degrees(car.heading):.1f}°")
         print(f"Final distance to target: {lot.distance_to_target(car):.2f}m")
         print(f"Successfully parked: {lot.is_parked(car)}")
+        print(f"car top edge:   {car.y + car.width/2:.2f}")
+        print(f"car bot edge:   {car.y - car.width/2:.2f}")
+        print(f"space top:      {lot.space_y + lot.space_height:.2f}")
+        print(f"space bottom:   {lot.space_y:.2f}")
         break
 
 renderer.close()
