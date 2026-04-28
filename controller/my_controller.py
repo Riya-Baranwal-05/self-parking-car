@@ -54,7 +54,7 @@ class ParkingController:
                 k = car.max_steering / np.radians(30)
                 steering = np.clip(k * heading_error, 0, car.max_steering)
 
-                return -0.8,-steering
+                return -0.8, self.arc1_steering
             else: 
                 # calculate exact front-right corner position NOW (at 45°)
                 front_right_x = car.x \
@@ -95,9 +95,9 @@ class ParkingController:
             if abs(car.heading) > np.radians(1) \
             and rear_y > lot.curb_y + 0.8 \
             and corner_safe:
-                k = car.max_steering / np.radians(45)
+                k = car.max_steering / np.radians(30)
                 steering = np.clip(k * abs(car.heading), 0, car.max_steering)
-                return -0.8, steering
+                return -0.8, self.arc2_steering
                
             else:
                 self.nudge_target_x = car.x + 1.5  # pull forward 1.5m

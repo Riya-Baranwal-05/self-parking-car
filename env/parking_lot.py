@@ -4,7 +4,7 @@ class ParkingLot:
     def __init__(self):
         # parked cars blocking the space
         self.obstacles = [
-            (10, 8.0, 4.0, 2.5),   # left obstacle  x=10 to 14
+            (10, 8.0, 4.0,2.5),   # left obstacle  x=10 to 14
             (20, 8.0, 4.0,2.5),   # right obstacle x=20 to 24
         ]
 
@@ -12,7 +12,7 @@ class ParkingLot:
         self.space_x      = 14.0   # start of space
         self.space_y      = 8.0    # bottom of space
         self.space_width  = 6.0    # 1.5 × 4.0m car length
-        self.space_height = 2.5    # fits car width 1.8m with buffer
+        self.space_height = 2.5   # fits car width 1.8m with buffer
 
         self.curb_y = 7.5
 
@@ -30,7 +30,7 @@ class ParkingLot:
         """
         #car center must be within space
         in_x = self.space_x < car.x < self.space_x + self.space_width
-        in_y = self.space_y + car.width/2 < car.y < self.space_y + self.space_height - car.width/2 + 0.1
+        in_y = self.space_y + car.width/2 < car.y < self.space_y + self.space_height - car.width/2 + 0.2
 
         # above curb
         above_curb = car.y - (car.width/2) > self.curb_y
