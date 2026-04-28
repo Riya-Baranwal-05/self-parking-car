@@ -50,7 +50,11 @@ class ParkingController:
             
         elif self.state == "ARC1":
             if abs(np.degrees(car.heading)) < 45:
-                return -0.8,-car.max_steering
+                heading_error = np.radians(45)-abs(car.heading)
+                k = car.max_steering / np.radians(30)
+                steering = np.clip(k * heading_error, 0, car.max_steering)
+
+                return -0.8,-steering
             else: 
                 # calculate exact front-right corner position NOW (at 45°)
                 front_right_x = car.x \
@@ -83,7 +87,7 @@ class ParkingController:
                         - (car.length/2)*np.cos(abs(car.heading)) \
                         + (car.width/2)*np.sin(abs(car.heading))
 
-            corner_safe = rear_right_x > lot.space_x + 0.3  # stay 0.3m from left obstacle
+            corner_safe = rear_right_x > lot.space_x + 0.5  # stay 0.3m from left obstacle
 
             print(f"  ARC2: heading={np.degrees(car.heading):.1f}° "
                 f"rear_right_x={rear_right_x:.3f}")
@@ -91,7 +95,10 @@ class ParkingController:
             if abs(car.heading) > np.radians(1) \
             and rear_y > lot.curb_y + 0.8 \
             and corner_safe:
-                return -0.8, self.arc2_steering
+                k = car.max_steering / np.radians(45)
+                steering = np.clip(k * abs(car.heading), 0, car.max_steering)
+                return -0.8, steering
+               
             else:
                 self.nudge_target_x = car.x + 1.5  # pull forward 1.5m
                 self.state = "FORWARD_NUDGE"
@@ -117,8 +124,11 @@ class ParkingController:
             
         elif self.state == "STRAIGHTEN":
             if abs(car.x - self.target_x) > 0.3:
+                x_error = abs(car.x - self.target_x)
+                k = 0.25
+                velocity = np.clip(k * x_error, 0.05, 0.5)
                 direction = -1.0 if car.x > self.target_x else 1.0
-                return direction * 0.5, 0.0
+                return direction * velocity, 0.0
             else:
                 self.state = "DONE"
                 self.done = True
