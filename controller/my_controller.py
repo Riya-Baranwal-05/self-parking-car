@@ -10,6 +10,8 @@ class ParkingController:
         self.target_y = lot.space_y + 1/2*lot.space_height
         buffer_y = 0.6   # push car 0.6m lower
 
+        
+
         # arc1 exit — car center when rear-left corner 
         # touches obstacle top-left corner at 45°
         angle = np.radians(45)
