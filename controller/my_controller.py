@@ -2,9 +2,10 @@ import numpy as np
 
 
 class ParkingController:
-    def __init__(self, car, lot):
+    def __init__(self, car, lot,exit_angle_deg=45):
         self.car = car
         self.lot = lot
+        self.exit_angle_deg = exit_angle_deg 
         # target = center of parking space
         self.target_x = lot.space_x + 1/2*lot.space_width
         self.target_y = lot.space_y + 1/2*lot.space_height
@@ -20,9 +21,7 @@ class ParkingController:
 
         self.arc1_exit_x = obstacle_corner_x + (car.length/2)*np.cos(angle) + (car.width/2)*np.sin(angle)   # cx formula
         self.arc1_exit_y = obstacle_corner_y + (car.length/2)*np.sin(angle)  - (car.width/2)*np.cos(angle) - buffer_y  # cy formula
-        # compute exact straight distance needed to clear right obstacle  # wait, need actual position at arc1 end
-        angle = np.radians(45)
-        front_right_x = car.x + (car.length/2)*np.cos(abs(car.heading)) + (car.width/2)*np.sin(abs(car.heading))
+        
         # approach stops at arc1_exit_x
         self.maneuver_x = self.arc1_exit_x
 
@@ -51,11 +50,7 @@ class ParkingController:
                 return 0.0,0.0
             
         elif self.state == "ARC1":
-            if abs(np.degrees(car.heading)) < 45:
-                heading_error = np.radians(45)-abs(car.heading)
-                k = car.max_steering / np.radians(30)
-                steering = np.clip(k * heading_error, 0, car.max_steering)
-
+            if abs(np.degrees(car.heading)) < self.exit_angle_deg:
                 return -0.8, self.arc1_steering
             else: 
                 # calculate exact front-right corner position NOW (at 45°)
