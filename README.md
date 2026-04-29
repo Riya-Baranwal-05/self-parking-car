@@ -103,6 +103,25 @@ stop when: rear_right_x < space_x + 0.3m
 ### Turning Radius
 R = wheelbase / tan(steering_angle) = 2.5 / tan(35°) = 3.57m minimum
 
+## 🧠 Neural Net — ExitAngleNet
+
+The classical controller works from one fixed starting position (y=13).
+The neural net extends this to any starting y.
+
+**How it works:**
+1. Search script finds the correct Arc1 exit angle for each starting y
+2. Small MLP (1→16→16→1) trains on these (y_start, exit_angle) pairs
+3. At test time: net predicts exit angle → controller uses it → parks!
+
+**Architecture:**
+input: y_start (1 number)
+hidden: 16 → ReLU → 16 → ReLU
+output: exit_angle_deg (1 number)
+
+**Results:**
+- Trains to loss < 0.0001 in 1000 epochs
+- Generalizes to unseen starting positions
+- y=12.6 (never seen) → predicted 38.5° → Successfully parked: True ✅
 
 ## 🗂️ File Structure
 
@@ -114,6 +133,11 @@ R = wheelbase / tan(steering_angle) = 2.5 / tan(35°) = 3.57m minimum
 | `controller/parking_controller.py` | Original geometric controller |
 | `controller/my_controller.py` | Rewritten from scratch — full understanding |
 | `test_car.py` | Main simulation runner |
+| `ml/correction_net.py` | ExitAngleNet neural network architecture |
+| `ml/find_exit_angles.py` | Search script to find working exit angles |
+| `ml/train.py` | Training script |
+| `ml/exit_angles.csv` | Training data |
+| `ml/exit_angle_model.pt` | Trained model weights |
 
 ## 🚀 How to Run
 
@@ -142,7 +166,8 @@ python test_car.py
 - ✅ Live renderer
 - ✅ Classical geometric controller
 - ✅ Rewritten controller from scratch (my_controller.py)
-- 🔜 Neural correction layer (next)
+- ✅ Neural net — ExitAngleNet predicts arc1 exit angle from starting position
+- ✅ Car parks successfully from unseen starting positions using neural net
 
 ---
 *Built as part of a Shu Ha Ri robotics learning journey.*
