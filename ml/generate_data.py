@@ -1,3 +1,11 @@
+# NOTE: This was the original data generation approach — behavior cloning
+# We later switched to a simpler approach (find_exit_angles.py) that
+# learns just the Arc1 exit angle from starting y position.
+# Kept here to show the evolution of the project.
+
+
+
+
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

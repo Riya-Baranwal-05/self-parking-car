@@ -24,9 +24,6 @@ class ParkingController:
         
         # approach stops at arc1_exit_x
         self.maneuver_x = self.arc1_exit_x
-
-        # straight reverse distance
-        self.straight_distance = 1.5
         self.straight_target_x = None
 
         # steering
@@ -36,9 +33,13 @@ class ParkingController:
         # state machine
         self.state = "APPROACH"
         self.done  = False
-        print(f"arc1_exit_y with buffer: {self.arc1_exit_y:.3f}")
 
     def compute_steering(self):
+        """
+        State machine — returns (velocity, steering_angle) for current step.
+        States: APPROACH → ARC1 → STRAIGHT_REVERSE → ARC2 
+                → FORWARD_NUDGE → ARC2_FINAL → STRAIGHTEN → DONE
+        """
         car = self.car
         lot = self.lot
 
@@ -65,9 +66,6 @@ class ParkingController:
                 # convert clearance to x movement at current heading
                 self.straight_target_x = car.x - clearance * np.cos(abs(car.heading))
                 self.state = "STRAIGHT_REVERSE"
-                print(f"Arc1 done — front_right_x={front_right_x:.3f}")
-                print(f"Clearance needed={clearance:.3f}m")
-                print(f"Straight target x={self.straight_target_x:.3f}")
                 return 0.0,0.0
         elif self.state == "STRAIGHT_REVERSE":
             if car.x > self.straight_target_x:
@@ -84,10 +82,7 @@ class ParkingController:
                         - (car.length/2)*np.cos(abs(car.heading)) \
                         + (car.width/2)*np.sin(abs(car.heading))
 
-            corner_safe = rear_right_x > lot.space_x + 0.5  # stay 0.3m from left obstacle
-
-            print(f"  ARC2: heading={np.degrees(car.heading):.1f}° "
-                f"rear_right_x={rear_right_x:.3f}")
+            corner_safe = rear_right_x > lot.space_x + 0.5  # stay 0.5m from left obstacle
 
             if abs(car.heading) > np.radians(1) \
             and rear_y > lot.curb_y + 0.8 \
@@ -99,7 +94,6 @@ class ParkingController:
             else:
                 self.nudge_target_x = car.x + 1.5  # pull forward 1.5m
                 self.state = "FORWARD_NUDGE"
-                print(f"Arc2 paused — pulling forward to finish straightening")
                 return 0.0, 0.0
             
         # after ARC2 exits, before STRAIGHTEN
