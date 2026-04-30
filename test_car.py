@@ -21,7 +21,7 @@ for step in range(700):
     renderer.draw(car,lot,title=f"State: {ctrl.state}  |  step {step}")
 
     if lot.is_collision(car):
-        print(f"💥 Collision at step {step}!")
+        print(f"Collision at step {step}!")
         break
     if ctrl.done:
         print(f"Final position: x={car.x:.2f} y={car.y:.2f}")

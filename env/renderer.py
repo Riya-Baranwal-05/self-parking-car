@@ -2,9 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.patches import Polygon
+import matplotlib
 
 class Renderer:
     def __init__(self,world_size=30):
+        matplotlib.rcParams['toolbar'] = 'None'
         self.fig,self.ax=plt.subplots(figsize=(10,8))
         self.world_size=world_size
         plt.ion() #interactive mode - updates live
@@ -58,8 +60,15 @@ class Renderer:
             dist = lot.distance_to_target(car)
             parked = lot.is_parked(car)
             collision = lot.is_collision(car)
-            status ="PARKED!" if parked else ("COLLISION!" if collision else f"dist: {dist:.2f}m")
-            color = "green" if parked else ("red" if collision else "black")
+            if parked:
+                status = "PARKED! "
+                color = "green"
+            elif collision:
+                status = "COLLISION! "
+                color = "red"
+            else:
+                status = f"dist: {dist:.2f}m"
+                color = "black"
             self.ax.set_xlabel(f'X (meters) - status: {status}', color=color)
 
         #draw ego car body
@@ -68,6 +77,24 @@ class Renderer:
                             facecolor='#1565c0',edgecolor='#0d47a1',
                             linewidth=1.5,alpha=0.9)
         self.ax.add_patch(car_shape)
+        if parked:
+            self.ax.text(
+                0.5, 0.5, 'PARKED!',
+                transform=self.ax.transAxes,
+                fontsize=24, fontweight='bold',
+                color='green', alpha=0.8,
+                ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.5)
+            )
+        elif collision:
+            self.ax.text(
+                0.5, 0.5, 'OOPS!',
+                transform=self.ax.transAxes,
+                fontsize=24, fontweight='bold',
+                color='red', alpha=0.8,
+                ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.5)
+    )
 
         #draw a small arrow showing heading direction
         arrow_len =1.2
@@ -80,7 +107,7 @@ class Renderer:
         self.ax.plot(car.x,car.y,'yo',markersize=4)
 
         if title:
-            self.ax.set_title(title,fontsize=10)
+            self.ax.set_title(f"{title}  |  car y={car.y:.2f}", fontsize=10)
         
         
         self.ax.set_ylabel('Y (meters)')
